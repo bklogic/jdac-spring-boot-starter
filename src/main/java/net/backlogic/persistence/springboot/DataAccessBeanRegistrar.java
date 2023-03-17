@@ -18,33 +18,33 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 
-import net.backlogic.persistence.client.PersistenceClient;
-import net.backlogic.persistence.client.annotation.BacklogicCommand;
-import net.backlogic.persistence.client.annotation.BacklogicQuery;
-import net.backlogic.persistence.client.annotation.BacklogicRepository;
+import net.backlogic.persistence.client.DataAccessClient;
+import net.backlogic.persistence.client.annotation.CommandService;
+import net.backlogic.persistence.client.annotation.QueryService;
+import net.backlogic.persistence.client.annotation.RepositoryService;
 
 @Configuration
-@Import(net.backlogic.persistence.springboot.BacklogicBeanRegistrar.class)
-public class BacklogicBeanRegistrar implements ImportBeanDefinitionRegistrar, EnvironmentAware {
+@Import(DataAccessBeanRegistrar.class)
+public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, EnvironmentAware {
 
-	private PersistenceClient client;
+	private DataAccessClient client;
 	
 	private ClassPathScanningCandidateComponentProvider scanner;
 	
-	private BacklogicProperties backlogicProperties;
+	private DataAccessProperties dataAccessProperties;
 
 	@Autowired
 	private ApplicationContext applicationContext;
 	
 	@Override
 	public void setEnvironment(Environment environment) {
-		//load backlogic properties
-		this.backlogicProperties = new BacklogicProperties();
-		this.backlogicProperties.setBaseUrl(environment.getProperty("backlogic.peristence.baseUrl"));
-		this.backlogicProperties.setBasePackage(environment.getProperty("backlogic.peristence.basePackage"));
+		//load data access properties
+		this.dataAccessProperties = new DataAccessProperties();
+		this.dataAccessProperties.setBaseUrl(environment.getProperty("das.baseUrl"));
+		this.dataAccessProperties.setBasePackage(environment.getProperty("das.basePackage"));
 		
-		//create persistence client
-		this.client = new PersistenceClient(backlogicProperties.getBaseUrl());
+		//create data access client
+		this.client = new DataAccessClient(dataAccessProperties.getBaseUrl());
 		
 		// create interface scanner
 		this.scanner = new ClassPathScanningCandidateComponentProvider(false){
@@ -61,24 +61,24 @@ public class BacklogicBeanRegistrar implements ImportBeanDefinitionRegistrar, En
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
 		//scan and register beans
 		Set<BeanDefinition> definitions;
-		String basePackage = backlogicProperties.getBasePackage();
+		String basePackage = dataAccessProperties.getBasePackage();
 		
 		
 		//queries
 		scanner.resetFilters(false);
-		scanner.addIncludeFilter(new AnnotationTypeFilter(BacklogicQuery.class));
+		scanner.addIncludeFilter(new AnnotationTypeFilter(QueryService.class));
 		definitions = scanner.findCandidateComponents(basePackage);
 		registBeanDefinitions(definitions, "query", registry);
 		
 		//commands
 		scanner.resetFilters(false);
-		scanner.addIncludeFilter(new AnnotationTypeFilter(BacklogicCommand.class));
+		scanner.addIncludeFilter(new AnnotationTypeFilter(CommandService.class));
 		definitions = scanner.findCandidateComponents(basePackage);
 		registBeanDefinitions(definitions, "command", registry);
 		
 		//repositories
 		scanner.resetFilters(false);
-		scanner.addIncludeFilter(new AnnotationTypeFilter(BacklogicRepository.class));
+		scanner.addIncludeFilter(new AnnotationTypeFilter(RepositoryService.class));
 		definitions = scanner.findCandidateComponents(basePackage);
 		registBeanDefinitions(definitions, "repository", registry);
 	}

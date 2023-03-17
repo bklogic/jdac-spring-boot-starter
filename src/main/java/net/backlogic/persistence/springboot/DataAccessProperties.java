@@ -1,6 +1,6 @@
 package net.backlogic.persistence.springboot;
 
-public class BacklogicProperties {
+public class DataAccessProperties {
 	private String baseUrl;
 	private String basePackage;
 	

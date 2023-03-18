@@ -23,6 +23,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webflux</artifactId>
+			<version>${spring-boot.version}</version>
+		</dependency>
+
+		<dependency>
 			  <groupId>net.backlogic.persistence</groupId>
 			  <artifactId>data-access-client</artifactId>
 			  <version>0.0.1-SNAPSHOT</version>

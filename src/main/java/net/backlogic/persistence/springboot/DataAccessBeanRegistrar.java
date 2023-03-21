@@ -3,12 +3,12 @@ package net.backlogic.persistence.springboot;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +19,7 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 
 import net.backlogic.persistence.client.DataAccessClient;
+import net.backlogic.persistence.client.annotation.BatchService;
 import net.backlogic.persistence.client.annotation.CommandService;
 import net.backlogic.persistence.client.annotation.QueryService;
 import net.backlogic.persistence.client.annotation.RepositoryService;
@@ -26,6 +27,7 @@ import net.backlogic.persistence.client.annotation.RepositoryService;
 @Configuration
 @Import(DataAccessBeanRegistrar.class)
 public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, EnvironmentAware {
+	Logger LOGGER = LoggerFactory.getLogger(DataAccessBeanRegistrar.class);
 
 	private DataAccessClient client;
 	
@@ -33,9 +35,6 @@ public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, E
 	
 	private DataAccessProperties dataAccessProperties;
 
-	@Autowired
-	private ApplicationContext applicationContext;
-	
 	@Override
 	public void setEnvironment(Environment environment) {
 		//load data access properties
@@ -44,7 +43,7 @@ public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, E
 		this.dataAccessProperties.setBasePackage(environment.getProperty("das.basePackage"));
 		
 		//create data access client
-		this.client = new DataAccessClient(dataAccessProperties.getBaseUrl());
+		this.client = DataAccessClient.builder().baseUrl(dataAccessProperties.getBaseUrl()).build();
 		
 		// create interface scanner
 		this.scanner = new ClassPathScanningCandidateComponentProvider(false){
@@ -59,28 +58,36 @@ public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, E
 	
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+		// register client bean
+		registerClientBean(this.client, registry);
+		
 		//scan and register beans
 		Set<BeanDefinition> definitions;
 		String basePackage = dataAccessProperties.getBasePackage();
 		
-		
-		//queries
+		// queries
 		scanner.resetFilters(false);
 		scanner.addIncludeFilter(new AnnotationTypeFilter(QueryService.class));
 		definitions = scanner.findCandidateComponents(basePackage);
 		registBeanDefinitions(definitions, "query", registry);
 		
-		//commands
+		// commands
 		scanner.resetFilters(false);
 		scanner.addIncludeFilter(new AnnotationTypeFilter(CommandService.class));
 		definitions = scanner.findCandidateComponents(basePackage);
 		registBeanDefinitions(definitions, "command", registry);
 		
-		//repositories
+		// repositories
 		scanner.resetFilters(false);
 		scanner.addIncludeFilter(new AnnotationTypeFilter(RepositoryService.class));
 		definitions = scanner.findCandidateComponents(basePackage);
 		registBeanDefinitions(definitions, "repository", registry);
+		
+		// batches
+		scanner.resetFilters(false);
+		scanner.addIncludeFilter(new AnnotationTypeFilter(BatchService.class));
+		definitions = scanner.findCandidateComponents(basePackage);
+		registBeanDefinitions(definitions, "batch", registry);
 	}
 	
 	
@@ -99,6 +106,9 @@ public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, E
 			case "repository":
 				instanceSupplier = ()-> client.getRepository(beanClass);
 				break;
+			case "batch":
+				instanceSupplier = ()-> client.getBatch(beanClass);
+				break;
 			}
 			
 			GenericBeanDefinition targetBeanDefinition = new GenericBeanDefinition();
@@ -109,12 +119,21 @@ public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, E
 	}
 	
 	
+	private void registerClientBean(DataAccessClient client, BeanDefinitionRegistry registry) {
+		Supplier<?> instanceSupplier = ()-> { return client; };
+		GenericBeanDefinition targetBeanDefinition = new GenericBeanDefinition();
+		targetBeanDefinition.setBeanClass(DataAccessClient.class);
+		targetBeanDefinition.setInstanceSupplier(instanceSupplier);
+		registry.registerBeanDefinition(DataAccessClient.class.getName(), targetBeanDefinition);
+	}
+	
+	
 	private Class<?> getBeanClass(String beanClassName){
 		Class<?> beanClass = null;
 		try {
 			beanClass = Class.forName(beanClassName);
-		} catch(Exception ex) {
-			ex.printStackTrace();
+		} catch(Exception e) {
+			LOGGER.error("Error in getting bean class.", e);
 		}
 		return beanClass;
 	}

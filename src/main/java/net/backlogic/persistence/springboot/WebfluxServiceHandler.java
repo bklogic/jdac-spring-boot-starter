@@ -1,11 +1,9 @@
 package net.backlogic.persistence.springboot;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-
-import net.backlogic.persistence.client.handler.ReturnType;
-import net.backlogic.persistence.client.handler.ServiceHandler;
+import java.text.SimpleDateFormat;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.function.Supplier;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -13,9 +11,12 @@ import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.http.codec.json.Jackson2JsonEncoder;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.text.SimpleDateFormat;
-import java.util.LinkedList;
-import java.util.List;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+
+import net.backlogic.persistence.client.handler.ReturnType;
+import net.backlogic.persistence.client.handler.ServiceHandler;
 
 // TODO: To support reactive service
 public class WebfluxServiceHandler  implements ServiceHandler {
@@ -88,5 +89,12 @@ public class WebfluxServiceHandler  implements ServiceHandler {
 
         return list;
     }
+
+	@Override
+	public void setJwtProvider(Supplier<String> jwtProvider) {
+		// TODO Auto-generated method stub
+		
+	}
+
 
 }

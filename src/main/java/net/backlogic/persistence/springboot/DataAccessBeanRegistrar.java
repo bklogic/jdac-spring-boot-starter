@@ -43,7 +43,10 @@ public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, E
 		this.dataAccessProperties.setBasePackage(environment.getProperty("das.basePackage"));
 		
 		//create data access client
-		this.client = DataAccessClient.builder().baseUrl(dataAccessProperties.getBaseUrl()).build();
+		this.client = DataAccessClient.builder()
+				.baseUrl(dataAccessProperties.getBaseUrl())
+				.jwtProvider(() -> "eyJraWQiOiJiYWNrbG9naWMtdHJ5LWU5MmU5NGFiLWM2NTMtNDE3Yi1hYmFhLTUwNjNiZWUyMjhlMiIsInR5cCI6IkpXVCIsImFsZyI6IlJTMjU2In0.eyJhdWQiOiJiYWNrbG9naWMtc2VydmljZXMiLCJ3b3Jrc3BhY2UiOiJ0cnk0IiwiaXNzIjoiaHR0cHM6Ly9yZXF1ZXN0LnRyeXByb2QuYmFja2xvZ2ljLm5ldC9hdXRoIn0.cWxU44aj8tUE0_ogUXkPh4HiCv_qWG6tJw7OLcwf70TUdnWdYFAk8JovFcCqFKFZdBfbkkQCNr_6RW9Pp__SZgUagtOo8n3Fzf8p0Yi5P7atQhY64wIf4Y8Hvoh2866XQJpbRvSKk4TKhd7H_RDYTTNqUP6UMwV7Eyzzxd1rxdJPG9O9PZdC0Sp2KLRzix7UsWN7p6BWyr3hJ0tMeVy7d4XjTl75kFh5AL-2u2Kllge7kNeG_Vy3I0mbELNhw8maxVRLeY_ZrKmclibkDi6jtfBXJqn3PPQ_O_V_sMRlq1VOFNIuGn9bdDD2ObFpPWZ582Q82LCvhn0vQDGTpE7ukg")
+				.build();
 		
 		// create interface scanner
 		this.scanner = new ClassPathScanningCandidateComponentProvider(false){

@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.backlogic.persistence</groupId>
 	<artifactId>das-spring-boot-starter</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2</version>
 	<packaging>jar</packaging>
 	<name>das-spring-boot-starter</name>
 	<description>Spring boot starter for data access service</description>
@@ -31,7 +31,7 @@
 		<dependency>
 			  <groupId>net.backlogic.persistence</groupId>
 			  <artifactId>data-access-client</artifactId>
-			  <version>0.0.1-SNAPSHOT</version>
+			  <version>0.0.2</version>
 		</dependency>
 	</dependencies>
 

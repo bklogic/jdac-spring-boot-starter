@@ -96,5 +96,11 @@ public class WebfluxServiceHandler  implements ServiceHandler {
 		
 	}
 
+	@Override
+	public void logRequest(boolean logRequest) {
+		// TODO Auto-generated method stub
+		
+	}
+
 
 }

@@ -23,6 +23,7 @@ import net.backlogic.persistence.client.annotation.BatchService;
 import net.backlogic.persistence.client.annotation.CommandService;
 import net.backlogic.persistence.client.annotation.QueryService;
 import net.backlogic.persistence.client.annotation.RepositoryService;
+import net.backlogic.persistence.client.auth.DevTimeCredential;
 
 @Configuration
 @Import(DataAccessBeanRegistrar.class)
@@ -38,14 +39,37 @@ public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, E
 	@Override
 	public void setEnvironment(Environment environment) {
 		//load data access properties
-		this.dataAccessProperties = new DataAccessProperties();
-		this.dataAccessProperties.setBaseUrl(environment.getProperty("das.baseUrl"));
-		this.dataAccessProperties.setBasePackage(environment.getProperty("das.basePackage"));
+		DataAccessProperties dataAccessProperties = new DataAccessProperties();
+		dataAccessProperties.setBaseUrl(environment.getProperty("das.baseUrl"));
+		dataAccessProperties.setBasePackage(environment.getProperty("das.basePackage"));
+		dataAccessProperties.setLogRequest(environment.getProperty("das.logRequest").equalsIgnoreCase("true"));
+		
+		DevTimeProperties devtime = new DevTimeProperties();
+		devtime.setEnabled(environment.getProperty("das.devtime.enabled").equalsIgnoreCase("true"));
+		devtime.setJwt(environment.getProperty("das.devtime.jwt"));
+		devtime.setAuthEndpoint(environment.getProperty("das.devtime.authEndpoint"));
+		devtime.setServiceKey(environment.getProperty("das.devtime.serviceKey"));
+		devtime.setServiceSecret(environment.getProperty("das.devtime.serviceSecret"));	
+		dataAccessProperties.setDevtime(devtime);
+		this.dataAccessProperties = dataAccessProperties;
 		
 		//create data access client
+		Supplier<String> jwtProvider = null;
+		DevTimeCredential devTimeCredential = null;
+		if (devtime.isEnabled()) {
+			if (devtime.getJwt() != null) {
+				jwtProvider = () -> this.dataAccessProperties.getDevtime().getJwt();
+			} else {
+				devTimeCredential = new DevTimeCredential(
+						devtime.getAuthEndpoint(), devtime.getServiceKey(), devtime.getServiceSecret()
+				);
+			}
+		}
 		this.client = DataAccessClient.builder()
 				.baseUrl(dataAccessProperties.getBaseUrl())
-				.jwtProvider(() -> "eyJraWQiOiJiYWNrbG9naWMtdHJ5LWU5MmU5NGFiLWM2NTMtNDE3Yi1hYmFhLTUwNjNiZWUyMjhlMiIsInR5cCI6IkpXVCIsImFsZyI6IlJTMjU2In0.eyJhdWQiOiJiYWNrbG9naWMtc2VydmljZXMiLCJ3b3Jrc3BhY2UiOiJ0cnk0IiwiaXNzIjoiaHR0cHM6Ly9yZXF1ZXN0LnRyeXByb2QuYmFja2xvZ2ljLm5ldC9hdXRoIn0.cWxU44aj8tUE0_ogUXkPh4HiCv_qWG6tJw7OLcwf70TUdnWdYFAk8JovFcCqFKFZdBfbkkQCNr_6RW9Pp__SZgUagtOo8n3Fzf8p0Yi5P7atQhY64wIf4Y8Hvoh2866XQJpbRvSKk4TKhd7H_RDYTTNqUP6UMwV7Eyzzxd1rxdJPG9O9PZdC0Sp2KLRzix7UsWN7p6BWyr3hJ0tMeVy7d4XjTl75kFh5AL-2u2Kllge7kNeG_Vy3I0mbELNhw8maxVRLeY_ZrKmclibkDi6jtfBXJqn3PPQ_O_V_sMRlq1VOFNIuGn9bdDD2ObFpPWZ582Q82LCvhn0vQDGTpE7ukg")
+				.jwtProvider(jwtProvider)
+				.devTimeCredential(devTimeCredential)
+				.logRequest(dataAccessProperties.isLogRequest())
 				.build();
 		
 		// create interface scanner

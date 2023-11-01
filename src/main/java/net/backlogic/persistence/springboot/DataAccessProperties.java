@@ -1,10 +1,11 @@
 package net.backlogic.persistence.springboot;
 
+import java.util.Properties;
 public class DataAccessProperties {
 	private String baseUrl;
 	private String basePackage;
 	private boolean logRequest;
-	private DevTimeProperties devtime = new DevTimeProperties();
+	private Properties jwtProvider = new Properties();
 	
 	public String getBaseUrl() {
 		return baseUrl;
@@ -24,10 +25,12 @@ public class DataAccessProperties {
 	public void setLogRequest(boolean logRequest) {
 		this.logRequest = logRequest;
 	}
-	public DevTimeProperties getDevtime() {
-		return devtime;
+
+	public Properties getJwtProvider() {
+		return jwtProvider;
 	}
-	public void setDevtime(DevTimeProperties devtime) {
-		this.devtime = devtime;
-	}		
+
+	public void setJwtProvider(Properties jwtProvider) {
+		this.jwtProvider = jwtProvider;
+	}
 }

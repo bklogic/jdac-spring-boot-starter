@@ -1,0 +1,7 @@
+rdas:
+  baseUrl: https://try4.devtime.tryprod.backlogic.net/service/try4/example
+  basePackage: net.backlogic.persistence.springboot.classic.repository
+  logRequest: true
+  jwtProvider:
+    class: simple
+    jwt: ""

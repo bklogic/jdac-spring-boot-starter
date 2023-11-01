@@ -31,7 +31,12 @@ import java.util.function.Supplier;
 @Configuration
 @Import(DataAccessBeanRegistrar.class)
 public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, EnvironmentAware {
-	Logger LOGGER = LoggerFactory.getLogger(DataAccessBeanRegistrar.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DataAccessBeanRegistrar.class);
+	private static final String JDAC_PREFIX = "jdac";
+	private static final String JDAC_BASE_URL = JDAC_PREFIX + ".baseUrl";
+	private static final String JDAC_BASE_PACKAGE = JDAC_PREFIX + ".basePackage";
+	private static final String JDAC_LOG_REQUEST = JDAC_PREFIX + ".logRequest";
+	private static final String JDAC_JWT_PROVIDER = JDAC_PREFIX + ".jwtProvider";
 
 	private DataAccessClient client;
 	
@@ -43,9 +48,9 @@ public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, E
 	public void setEnvironment(Environment environment) {
 		//basic data access properties
 		DataAccessProperties dataAccessProperties = new DataAccessProperties();
-		dataAccessProperties.setBaseUrl(environment.getProperty("rdas.baseUrl"));
-		dataAccessProperties.setBasePackage(environment.getProperty("rdas.basePackage"));
-		dataAccessProperties.setLogRequest(environment.getProperty("rdas.logRequest").equalsIgnoreCase("true"));
+		dataAccessProperties.setBaseUrl(environment.getProperty(JDAC_BASE_URL));
+		dataAccessProperties.setBasePackage(environment.getProperty(JDAC_BASE_PACKAGE));
+		dataAccessProperties.setLogRequest(environment.getProperty(JDAC_LOG_REQUEST).equalsIgnoreCase("true"));
 		// jwt provider properties
 		Properties properties = new Properties();
 		if (environment instanceof ConfigurableEnvironment) {
@@ -53,7 +58,7 @@ public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, E
 				if (propertySource instanceof EnumerablePropertySource) {
 					for (String key : ((EnumerablePropertySource) propertySource).getPropertyNames()) {
 						// note: there may be multiple entries for same key sorted by importance desc
-						if (key.startsWith("rdas.jwtProvider") && !properties.containsKey(key)) {
+						if (key.startsWith(JDAC_JWT_PROVIDER) && !properties.containsKey(key)) {
 							properties.put(key, propertySource.getProperty(key));
 						}
 					}
@@ -120,23 +125,15 @@ public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, E
 	private void registerBeanDefinitions(Set<BeanDefinition> definitions, String beanType, BeanDefinitionRegistry registry) {
 		for (BeanDefinition definition : definitions) {
 			Class<?> beanClass = getBeanClass(definition.getBeanClassName());
-			
+
 			Supplier<?> instanceSupplier = null;
 			switch(beanType) {
-			case "query":
-				instanceSupplier = ()-> client.getQuery(beanClass);
-				break;
-			case "command":
-				instanceSupplier = ()-> client.getCommand(beanClass);
-				break;
-			case "repository":
-				instanceSupplier = ()-> client.getRepository(beanClass);
-				break;
-			case "batch":
-				instanceSupplier = ()-> client.getBatch(beanClass);
-				break;
+				case BeanType.QUERY -> instanceSupplier = () -> client.getQuery(beanClass);
+				case BeanType.COMMAND -> instanceSupplier = ()-> client.getCommand(beanClass);
+				case BeanType.REPOSITORY -> instanceSupplier = ()-> client.getRepository(beanClass);
+				case BeanType.BATCH -> instanceSupplier = ()-> client.getBatch(beanClass);
 			}
-			
+
 			GenericBeanDefinition targetBeanDefinition = new GenericBeanDefinition();
 			targetBeanDefinition.setBeanClass(beanClass);
 			targetBeanDefinition.setInstanceSupplier(instanceSupplier);
@@ -174,21 +171,20 @@ public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, E
 			return null;
 		}
 
-		switch (className) {
-			case "simple":
-				className = "net.backlogic.persistence.client.auth.SimpleJwtProvider";
-			case "basic":
-				className = "net.backlogic.persistence.client.auth.BasicJwtProvider";
-		}
+		className = switch (className) {
+			case "simple" -> "net.backlogic.persistence.client.auth.SimpleJwtProvider";
+			case "basic" -> "net.backlogic.persistence.client.auth.BasicJwtProvider";
+			default -> className;
+		};
 
 		JwtProvider jwtProvider = null;
 		try {
 			Object provider = Class.forName(className);
 			jwtProvider = (JwtProvider) provider;
 		} catch (ClassNotFoundException e) {
-			throw new RDAS_EXCEPTION("JwtProvider class name not found: " + className);
+			throw new JDAC_SPRING_EXCEPTION("JwtProvider class name not found: " + className);
 		} catch (ClassCastException e) {
-			throw new RDAS_EXCEPTION("class name is not JwtProvider: " + className);
+			throw new JDAC_SPRING_EXCEPTION("class name is not JwtProvider: " + className);
 		}
 		return jwtProvider;
 	}

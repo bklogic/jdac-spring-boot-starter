@@ -1,15 +1,19 @@
-# RDA Spring Boot Starter
+# JDAC Spring Boot Starter
 
-RDAS, or relational data access, Spring Boot Starter simplifies development of the data access layer backed by 
-data access services. It reduces the data access or repository layer of Spring Boot Application to a thin layer 
-of interfaces annotated with @QueryService, @CommandService and @RepositoryService, which serves as a proxy 
-of backend data access services.
+JDAC Spring Boot Starter is Spring Boot wrapper of 
+[Java Data Access client](https://github.com/bklogic/java-data-access-client). 
+It streamlines the data access layer development backed by data access services, and reduces the 
+data access or repository layer of Spring Boot Application into a thin layer 
+of interfaces annotated with @QueryService, @CommandService and @RepositoryService 
+that serve as a proxy of backend data access services.
 
-To understand what data access service is, please take a look :  
-[Data Access Service Documentation](https://docs.backlogic.net/#/DataAccessService)  
-It is a simple way to to solve your complex relational database access problem.
+If you don't know what data access service is, please take a look at:
 
-To get started with this RDAS Spring Boot Starter, please read on.
+[Data Access Service Documentation](https://docs.backlogic.net/#/DataAccessService)
+
+It is a simple way to solve complex relational database access problem.
+
+To get started with this Java Spring Boot Starter, please read on.
 
 ## Get Started
 
@@ -18,7 +22,7 @@ To get started with this RDAS Spring Boot Starter, please read on.
 ```xml
 <dependency>
     <groupId>net.backlogic.persistence</groupId>
-    <artifactId>rdas-spring-boot-starter</artifactId>
+    <artifactId>jdac-spring-boot-starter</artifactId>
     <version>0.0.5</version>
 </dependency>
 ```
@@ -27,7 +31,7 @@ To get started with this RDAS Spring Boot Starter, please read on.
 ### Configuration
 
 ```yaml
-rdas:
+jdac:
   baseUrl: https://try4.devtime.tryprod.backlogic.net/service/try4/example
   basePackage: net.backlogic.persistence.springboot.classic.repository
   logRequest: true
@@ -36,15 +40,15 @@ rdas:
     jwt: ""
 ```
 
-- baseUrl - baseUrl of a backend data access application
+- baseUrl - baseUrl of backend data access application
 - basePackage - root package to start data access interface scanning
 - logRequest - enable request and response logging if true
 - jwtProvide - specifying a JwtProvider supplying JWT bearer token.
 
 #### JwtProvider
 
-A JwtProvider is required when the service request needs to sent with a JWT token, such as the case with
-the DevTime service hosted in the BackLogic workspace. 
+A JwtProvider is required when the service request needs to be sent with a JWT token, as in the case with
+DevTime service hosted in BackLogic workspace. 
 
 There are two built-in JwtProviders: simple and basic. They can be configured as follows, respectively:
 
@@ -56,7 +60,7 @@ There are two built-in JwtProviders: simple and basic. They can be configured as
         jwt: ""
 ```
 
-The simple JwtProvider is simply configured with a valid JWT token. This provider is good for a quick and short test
+The simple JwtProvider is simply configured with a valid JWT token. This provider is for a quick and short test
 of your application.
 
 ##### Basic
@@ -155,21 +159,22 @@ public class MyService {
     
     public void playWithDataServices() {
         // query
-        List<Customer> customers = myQuery.getCustomersByCity("Los Angeles")
+        List<Customer> customers = myQuery.getCustomersByCity("Los Angeles");
 
         // command
         myQuery.removeCustomer (123);
 
         // repository
         Customer customer = new Customer("Joe", "Los Angeles");
-        customer = repository.create(customer)
+        customer = repository.create(customer);
+        customers = repository.getByCity("Los Angeles");
     }
 }
 ```
 
 ### Example Application
 
-An example RDAS Spring Boot application is available here:  
+An example JDAC Spring Boot application is available here:  
 
-https://github.com/bklogic/rdas-spring-boot-example
+https://github.com/bklogic/jdac-spring-boot-example
 

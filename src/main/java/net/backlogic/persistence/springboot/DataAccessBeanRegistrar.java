@@ -13,10 +13,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.EnvironmentAware;
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
+import org.springframework.context.annotation.*;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.EnumerablePropertySource;
 import org.springframework.core.env.Environment;
@@ -43,6 +40,19 @@ public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, E
 	private ClassPathScanningCandidateComponentProvider scanner;
 
 	private DataAccessProperties dataAccessProperties;
+
+	public DataAccessBeanRegistrar() {
+		LOGGER.info("DataAccessBeanRegistrar started!");
+	}
+
+	@Bean DataAccessClient dataAccessClient() {
+		LOGGER.info("creating client bean!");
+		return DataAccessClient.builder()
+				.baseUrl(dataAccessProperties.getBaseUrl())
+				.logRequest(dataAccessProperties.isLogRequest())
+				.build();
+	}
+
 
 	@Override
 	public void setEnvironment(Environment environment) {

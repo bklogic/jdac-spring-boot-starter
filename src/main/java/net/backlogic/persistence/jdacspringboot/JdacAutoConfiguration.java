@@ -7,6 +7,9 @@ import org.springframework.context.annotation.Import;
 
 import net.backlogic.persistence.client.DataAccessClient;
 
+/**
+ * AutoConfiguration class for JDAC Spring Boot Starter.
+ */
 @AutoConfiguration
 @ConditionalOnClass(DataAccessClient.class)
 @Import(DataAccessBeanRegistrar.class)

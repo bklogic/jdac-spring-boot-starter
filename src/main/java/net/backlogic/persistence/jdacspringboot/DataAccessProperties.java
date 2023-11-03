@@ -5,10 +5,25 @@ import java.util.Properties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * JDAC Spring Boot Starter Configuration Properties.
+ */
 public class DataAccessProperties {
+	/**
+	 * baseUrl of backend data access application.
+	 */
 	private String baseUrl;
+	/**
+	 * base package to start data access interface scanning.
+	 */
 	private String basePackage;
+	/**
+	 * Whether to enable request logging.
+	 */
 	private boolean logRequest;
+	/**
+	 * Specify a JwtProvider for JDAC client to use
+	 */
 	private Properties jwtProvider = new Properties();
 	
 	public String getBaseUrl() {

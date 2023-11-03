@@ -28,6 +28,10 @@ import net.backlogic.persistence.client.annotation.QueryService;
 import net.backlogic.persistence.client.annotation.RepositoryService;
 import net.backlogic.persistence.client.auth.JwtProvider;
 
+/**
+ * Implementing ImportBeanDefinitionRegistrar and EnvironmentAware.
+ * Scan and register data access interfaces as Spring Boot beans for autowiring.
+ */
 @Configuration
 @Import(DataAccessProperties.class)
 public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, EnvironmentAware {

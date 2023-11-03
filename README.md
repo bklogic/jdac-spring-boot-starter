@@ -4,7 +4,7 @@ JDAC Spring Boot Starter is a Spring Boot wrapper of
 [Java Data Access client](https://github.com/bklogic/java-data-access-client). 
 It streamlines data access layer development backed by data access services, and reduces the 
 data access layer (aka repository layer) of Spring Boot Application into a thin layer 
-of interfaces annotated with @QueryService, @CommandService and @RepositoryService, 
+of interfaces annotated with `@QueryService`, `@CommandService` and `@RepositoryService`, 
 which serve as proxies of backend data access services.
 
 If you don't know what data access service is, please take a look at:
@@ -31,12 +31,12 @@ To get started with this JDAC Spring Boot Starter, please read on.
 
 ```yaml
 jdac:
-  baseUrl: https://try4.devtime.tryprod.backlogic.net/service/try4/example
-  basePackage: net.backlogic.persistence.springboot.classic.repository
-  logRequest: true
-  jwtProvider:
-    class: simple
-    jwt: ""
+    baseUrl: https://try4.devtime.tryprod.backlogic.net/service/try4/example
+    basePackage: net.backlogic.persistence.springboot.classic.repository
+    logRequest: true
+    jwtProvider:
+        class: simple
+        jwt: ""
 ```
 
 - baseUrl - baseUrl of backend data access application
@@ -59,8 +59,8 @@ There are two built-in JwtProviders: simple and basic. They can be configured as
         jwt: token-string-comes-here
 ```
 
-The simple JwtProvider is simply configured with a valid JWT token. This provider is for a quick and short test
-of your application.
+The simple JwtProvider is simply configured with a valid JWT token. This provider is meant for quick and short test
+of JDAC applications.
 
 ##### Basic
 
@@ -105,24 +105,29 @@ The `authEndpoint`, `serviceKey` and `serviceSecret` for your BackLogic workspac
 ```java
 @QueryService("myQueries")
 public interface MyQuery {
-	@Query("getCustomers")
-	List<Customer> getCustomersByCity(String city);
+    @Query("getCustomerByCustomerNumber")
+    Customer getCustomer(String customerNumber);
+    
+    @Query("getCustomersByPostalCode")
+    List<Customer> getCustomersByPostalCode(String postalCode);
 }
 ```
 
-Mapped to query service `myQueries/getCustomers` in backend data access application.
+Mapped to query services `myQueries/getCustomerByCustomerNumber` and `myQueries/getCustomersByPostalCode`, 
+respectively, in backend data access application. One or more queries may be specified in a `@QueryService` interface.
 
 #### Command Interface
 
 ``` java
 @CommandService("myCommands")
 public interface MyCommand {
-	@Command("removeCustomer")
+	@Command("deleteCustomer")
 	void removeCustomer(Integer customerNumber);
 }
 ```
 
-Mapped to SQL (command) service `myCommands/removeCustomer` in backend data access application.
+Mapped to SQL (command) service `myCommands/deleteCustomer` in backend data access application. 
+One or more commands may be specified in a `@CommandService` interface.
 
 #### Repository Interface
 
@@ -142,7 +147,8 @@ public interface CustomerRepository {
 }
 ```
 
-Mapped to CRUD (repository) service `myRepositories/Customer` in backend data access application.
+Mapped to CRUD (repository) service `myRepositories/Customer` in backend data access application. 
+One `@RepositoryService` interface per CRUD service.
 
 
 ### Service Class
@@ -160,18 +166,21 @@ public class MyService {
     
     public void playWithDataServices() {
         // query
-        List<Customer> customers = myQuery.getCustomersByCity("Los Angeles");
+        List<Customer> customers = myQuery.getCustomersByPostalCode("90001");
 
         // command
         myQuery.removeCustomer (123);
 
         // repository
-        Customer customer = new Customer("Joe", "Los Angeles");
+        Customer customer = new Customer("Joe", "Los Angeles", "90001");
         customer = repository.create(customer);
         customers = repository.getByCity("Los Angeles");
     }
 }
 ```
+
+Note how the `@QueryService`, `@CommandService` and `@RepositoryService` are `Autowired` and called in the `service` class
+of Spring Boot application.
 
 ### Example Application
 

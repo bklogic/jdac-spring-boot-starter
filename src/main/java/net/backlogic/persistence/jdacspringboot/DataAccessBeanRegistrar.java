@@ -11,13 +11,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
+import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
-import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.core.env.EnumerablePropertySource;
 import org.springframework.core.env.Environment;
-import org.springframework.core.env.PropertySource;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 
@@ -28,13 +28,11 @@ import net.backlogic.persistence.client.annotation.QueryService;
 import net.backlogic.persistence.client.annotation.RepositoryService;
 import net.backlogic.persistence.client.auth.JwtProvider;
 
+@Configuration
+@Import(DataAccessProperties.class)
 public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, EnvironmentAware {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DataAccessBeanRegistrar.class);
 	private static final String JDAC_PREFIX = "jdac";
-	private static final String JDAC_BASE_URL = JDAC_PREFIX + ".baseUrl";
-	private static final String JDAC_BASE_PACKAGE = JDAC_PREFIX + ".basePackage";
-	private static final String JDAC_LOG_REQUEST = JDAC_PREFIX + ".logRequest";
-	private static final String JDAC_JWT_PROVIDER = JDAC_PREFIX + ".jwtProvider";
 
 	@Autowired
 	private DataAccessClient client;
@@ -47,27 +45,9 @@ public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, E
 	
 	@Override
 	public void setEnvironment(Environment environment) {
-		//basic data access properties
-		DataAccessProperties dataAccessProperties = new DataAccessProperties();
-		dataAccessProperties.setBaseUrl(environment.getProperty(JDAC_BASE_URL));
-		dataAccessProperties.setBasePackage(environment.getProperty(JDAC_BASE_PACKAGE));
-		dataAccessProperties.setLogRequest(environment.getProperty(JDAC_LOG_REQUEST).equalsIgnoreCase("true"));
-		// jwt provider properties
-		Properties properties = new Properties();
-		if (environment instanceof ConfigurableEnvironment) {
-			for (PropertySource<?> propertySource : ((ConfigurableEnvironment) environment).getPropertySources()) {
-				if (propertySource instanceof EnumerablePropertySource) {
-					for (String key : ((EnumerablePropertySource) propertySource).getPropertyNames()) {
-						// note: there may be multiple entries for same key sorted by importance desc
-						if (key.startsWith(JDAC_JWT_PROVIDER) && !properties.containsKey(key)) {
-							properties.put(key, propertySource.getProperty(key));
-						}
-					}
-				}
-			}
-		}
-		dataAccessProperties.setJwtProvider(properties);
-		this.dataAccessProperties = dataAccessProperties;
+		// get data access properties
+		Binder binder = Binder.get(environment);
+		dataAccessProperties = binder.bind(JDAC_PREFIX, DataAccessProperties.class).get();
 		LOGGER.info("JDAC data access properties loaded.");
 		LOGGER.info("baseUlr: {}", dataAccessProperties.getBaseUrl());
 		LOGGER.info("basePackage: {}", dataAccessProperties.getBasePackage());
@@ -187,12 +167,13 @@ public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, E
 
 		JwtProvider jwtProvider = null;
 		try {
-			Object provider = Class.forName(className);
-			jwtProvider = (JwtProvider) provider;
+			Class<?> providerClass =  Class.forName(className);
+			jwtProvider = (JwtProvider) providerClass.getConstructor().newInstance();
+			jwtProvider.set(jwtProviderProperties);
 		} catch (ClassNotFoundException e) {
 			throw new JDAC_SPRING_EXCEPTION("JwtProvider class name not found: " + className);
-		} catch (ClassCastException e) {
-			throw new JDAC_SPRING_EXCEPTION("class name is not JwtProvider: " + className);
+		} catch (Exception e) {
+			throw new JDAC_SPRING_EXCEPTION("class name is not conformed JwtProvider: " + className + " Cause: " + e.getMessage());
 		}
 		return jwtProvider;
 	}

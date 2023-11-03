@@ -1,4 +1,4 @@
-package net.backlogic.persistence.springboot;
+package net.backlogic.persistence.jdacspringboot;
 
 public class BeanType {
     public static final String QUERY = "query";

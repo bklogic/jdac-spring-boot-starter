@@ -1,7 +1,7 @@
 jdac:
-  baseUrl: https://try4.devtime.tryprod.backlogic.net/service/try4/example
-  basePackage: net.backlogic.persistence.springboot.classic.repository
-  logRequest: true
+  baseUrl: http://localhost:8080/service/default
+  basePackage: net.backlogic.persistence.springboot.classic
+  logRequest: false
   jwtProvider:
-    class: simple
-    jwt: ""
+    class: net.backlogic.persistence.client.auth.SimpleJwtProvider
+    jwt: " "

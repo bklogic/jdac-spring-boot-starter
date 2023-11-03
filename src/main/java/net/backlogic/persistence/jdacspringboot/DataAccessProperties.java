@@ -1,6 +1,10 @@
-package net.backlogic.persistence.springboot;
+package net.backlogic.persistence.jdacspringboot;
 
 import java.util.Properties;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+@ConfigurationProperties(prefix="jdac")
 public class DataAccessProperties {
 	private String baseUrl;
 	private String basePackage;

@@ -1,19 +1,19 @@
-package net.backlogic.persistence.springboot;
+package net.backlogic.persistence.jdacspringboot;
 
-import net.backlogic.persistence.client.DataAccessClient;
-import net.backlogic.persistence.client.annotation.BatchService;
-import net.backlogic.persistence.client.annotation.CommandService;
-import net.backlogic.persistence.client.annotation.QueryService;
-import net.backlogic.persistence.client.annotation.RepositoryService;
-import net.backlogic.persistence.client.auth.JwtProvider;
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.Supplier;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.EnvironmentAware;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.EnumerablePropertySource;
 import org.springframework.core.env.Environment;
@@ -21,12 +21,13 @@ import org.springframework.core.env.PropertySource;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 
-import java.util.Properties;
-import java.util.Set;
-import java.util.function.Supplier;
+import net.backlogic.persistence.client.DataAccessClient;
+import net.backlogic.persistence.client.annotation.BatchService;
+import net.backlogic.persistence.client.annotation.CommandService;
+import net.backlogic.persistence.client.annotation.QueryService;
+import net.backlogic.persistence.client.annotation.RepositoryService;
+import net.backlogic.persistence.client.auth.JwtProvider;
 
-@Configuration
-@Import(DataAccessBeanRegistrar.class)
 public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, EnvironmentAware {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DataAccessBeanRegistrar.class);
 	private static final String JDAC_PREFIX = "jdac";
@@ -35,25 +36,15 @@ public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, E
 	private static final String JDAC_LOG_REQUEST = JDAC_PREFIX + ".logRequest";
 	private static final String JDAC_JWT_PROVIDER = JDAC_PREFIX + ".jwtProvider";
 
+	@Autowired
 	private DataAccessClient client;
 	
 	private ClassPathScanningCandidateComponentProvider scanner;
 
+	@Autowired
 	private DataAccessProperties dataAccessProperties;
-
-	public DataAccessBeanRegistrar() {
-		LOGGER.info("DataAccessBeanRegistrar started!");
-	}
-
-	@Bean DataAccessClient dataAccessClient() {
-		LOGGER.info("creating client bean!");
-		return DataAccessClient.builder()
-				.baseUrl(dataAccessProperties.getBaseUrl())
-				.logRequest(dataAccessProperties.isLogRequest())
-				.build();
-	}
-
-
+	
+	
 	@Override
 	public void setEnvironment(Environment environment) {
 		//basic data access properties
@@ -77,6 +68,9 @@ public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, E
 		}
 		dataAccessProperties.setJwtProvider(properties);
 		this.dataAccessProperties = dataAccessProperties;
+		LOGGER.info("JDAC data access properties loaded.");
+		LOGGER.info("baseUlr: {}", dataAccessProperties.getBaseUrl());
+		LOGGER.info("basePackage: {}", dataAccessProperties.getBasePackage());
 
 		// client
 		JwtProvider jwtProvider = this.getJwtProvider(dataAccessProperties.getJwtProvider());
@@ -101,6 +95,7 @@ public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, E
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
 		// register client bean
 		registerClientBean(this.client, registry);
+		LOGGER.info("JDAC client registered.");
 		
 		//scan and register beans
 		Set<BeanDefinition> definitions;
@@ -129,6 +124,8 @@ public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, E
 		scanner.addIncludeFilter(new AnnotationTypeFilter(BatchService.class));
 		definitions = scanner.findCandidateComponents(basePackage);
 		registerBeanDefinitions(definitions, "batch", registry);
+		
+		LOGGER.info("JDAC data access beans registered.");
 	}
 	
 	
@@ -171,6 +168,7 @@ public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, E
 		return beanClass;
 	}
 
+
 	private JwtProvider getJwtProvider(Properties jwtProviderProperties) {
 		if (jwtProviderProperties == null) {
 			return null;
@@ -198,5 +196,5 @@ public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, E
 		}
 		return jwtProvider;
 	}
-
+	
 }

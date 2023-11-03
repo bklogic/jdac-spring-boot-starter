@@ -4,8 +4,8 @@ JDAC Spring Boot Starter is a Spring Boot wrapper of
 [Java Data Access client](https://github.com/bklogic/java-data-access-client). 
 It streamlines data access layer development backed by data access services, and reduces the 
 data access layer (aka repository layer) of Spring Boot Application into a thin layer 
-of interfaces annotated with @QueryService, @CommandService and @RepositoryService.
-These annotated interfaces serve as proxies of backend data access services.
+of interfaces annotated with @QueryService, @CommandService and @RepositoryService, 
+which serve as proxies of backend data access services.
 
 If you don't know what data access service is, please take a look at:
 

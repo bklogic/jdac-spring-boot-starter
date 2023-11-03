@@ -9,6 +9,5 @@ import net.backlogic.persistence.client.DataAccessClient;
 
 @AutoConfiguration
 @ConditionalOnClass(DataAccessClient.class)
-@EnableConfigurationProperties(DataAccessProperties.class)
 @Import(DataAccessBeanRegistrar.class)
 public class JdacAutoConfiguration {}

@@ -1,11 +1,11 @@
 # JDAC Spring Boot Starter
 
-JDAC Spring Boot Starter is Spring Boot wrapper of 
+JDAC Spring Boot Starter is a Spring Boot wrapper of 
 [Java Data Access client](https://github.com/bklogic/java-data-access-client). 
-It streamlines the data access layer development backed by data access services, and reduces the 
-data access or repository layer of Spring Boot Application into a thin layer 
-of interfaces annotated with @QueryService, @CommandService and @RepositoryService 
-that serve as a proxy of backend data access services.
+It streamlines data access layer development backed by data access services, and reduces the 
+data access layer (aka repository layer) of Spring Boot Application into a thin layer 
+of interfaces annotated with @QueryService, @CommandService and @RepositoryService.
+These annotated interfaces serve as proxies of backend data access services.
 
 If you don't know what data access service is, please take a look at:
 
@@ -13,7 +13,7 @@ If you don't know what data access service is, please take a look at:
 
 It is a simple way to solve complex relational database access problem.
 
-To get started with this Java Spring Boot Starter, please read on.
+To get started with this JDAC Spring Boot Starter, please read on.
 
 ## Get Started
 
@@ -27,8 +27,7 @@ To get started with this Java Spring Boot Starter, please read on.
 </dependency>
 ```
 
-
-### Configuration
+### Configuration in `application.yml`
 
 ```yaml
 jdac:
@@ -43,7 +42,7 @@ jdac:
 - baseUrl - baseUrl of backend data access application
 - basePackage - root package to start data access interface scanning
 - logRequest - enable request and response logging if true
-- jwtProvide - specifying a JwtProvider supplying JWT bearer token.
+- jwtProvider - specifying a JwtProvider supplying JWT bearer token, if needed
 
 #### JwtProvider
 
@@ -57,7 +56,7 @@ There are two built-in JwtProviders: simple and basic. They can be configured as
 ```yml
     jwtProvider:
         class: simple
-        jwt: ""
+        jwt: token-string-comes-here
 ```
 
 The simple JwtProvider is simply configured with a valid JWT token. This provider is for a quick and short test
@@ -69,15 +68,15 @@ of your application.
     jwtProvider:
         class: basic
         authEndpoint: https://try4.devtime.tryprod.backlogic.net/service/try4/auth
-        serviceKey: ""
-        serviceSecret: ""
+        serviceKey: key-string
+        serviceSecret: secret-string
 ```
 
 The basic JwtProvider relies on an auth service for JWT token. Therefore, it is configured with three parameters:
 - authEndpoint - endpoint of auth service
 - serviceKey and serviceSecret - credential for the auth service
 
-The Spring Boot Application will send the auth service a request in format of:
+The embedded JDAC client will send the auth service a request in format of:
 
 ```json
 {
@@ -95,7 +94,9 @@ and expect a response in format of:
 }
 ```
 
-The `authEndpoint`, `serviceKey` and `serviceSecret` for your BackLogic workspace is available from Service Builder.
+where `expiryTime` is milliseconds since epoch.  
+
+The `authEndpoint`, `serviceKey` and `serviceSecret` for your BackLogic workspace is available from *Service Builder*.
 
 ### Data Access (aka Repository) Interfaces
 
@@ -152,7 +153,7 @@ public class MyService {
     MyQuery myQuery;
     
     @Autowired
-    MCommand myCommand;
+    MyCommand myCommand;
 
     @Autowired
     CustomerRepository customerRepository;
@@ -178,3 +179,4 @@ An example JDAC Spring Boot application is available here:
 
 https://github.com/bklogic/jdac-spring-boot-example
 
+for your reference.

@@ -179,12 +179,11 @@ public class MyService {
 }
 ```
 
-Note how the `@QueryService`, `@CommandService` and `@RepositoryService` are `Autowired` and called in the `service` class
-of Spring Boot application.
+Note how the `@QueryService`, `@CommandService` and `@RepositoryService` interfaces are autowired and called in the service class.
 
-### Example Application
+## Example Application
 
-An example JDAC Spring Boot application is available here:  
+Lastly, an example JDAC Spring Boot application is available here:  
 
 https://github.com/bklogic/jdac-spring-boot-example
 

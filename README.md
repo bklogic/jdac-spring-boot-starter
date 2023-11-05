@@ -185,14 +185,16 @@ Note how the `@QueryService`, `@CommandService` and `@RepositoryService` interfa
 
 ### Batch Service (Experimental)
 
-Data access services may be batched together to form a batch service. Batched queries may be used
-to run multiple queries in one shot. Batched command or repository operations 
-may be used to expand the scope of transaction or unit of work.
+Batch service is an experimental feature. It provides a way to batch multiple queries for less-related data, 
+and a way to expand the transaction boundary of write operations. The batch commands and repository operations
+are executed in a single DB transaction, in the order that they are called.
+
+The are three components to batch service, as given below.
 
 #### Batch DTO
 
-For accept of result of batch service. With standard getter and setter methods that are omitted
-here for brevity.
+For accept of result of batch service. It should a no-arg constructor and standard getter and setter methods 
+that are omitted here for brevity.
 
 ```java
 public class BatchDTO {
@@ -204,7 +206,7 @@ public class BatchDTO {
 #### Batch Service Interface
 
 - Annotated with @BatchService. 
-- Must extend the generic Batch<T> interface. 
+- Must extend the generic Batch<T> interface, and use T to indicate return type.
 - Use @Query, @Command, @Create, @Save, etc. to add query, command or 
 repository operations to the batch.
 - Use @ReturnMapping to map the service output to a member field of batch DTO
@@ -224,10 +226,10 @@ public interface BatchQuery extends Batch<BatchDTO> {
 
 #### Batch Service Call
 
-- Use DataAccessClient to get a BatchService proxy
-- Call service methods to add inputs
-- Call get(), run() or save() method to initiate the batch service. These methods are defined 
-in the Batch interface, and are the same except in semantics.
+- Use DataAccessClient to get a BatchService proxy. Batch proxy is stateful;
+- Call service methods to add service to the batch;
+- Call get(), run() or save() method to initiate the batch service. These methods are inherited 
+from the Batch interface, and are the same except in semantics.
 
 ```java
 public class BatchExampleService {

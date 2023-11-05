@@ -181,6 +181,69 @@ public class MyService {
 
 Note how the `@QueryService`, `@CommandService` and `@RepositoryService` interfaces are autowired and called in the service class.
 
+## Advanced
+
+### Batch Service (Experimental)
+
+Data access services may be batched together to form a batch service. Batched queries may be used
+to run multiple queries in one shot. Batched command or repository operations 
+may be used to expand the scope of transaction or unit of work.
+
+#### Batch DTO
+
+For accept of result of batch service. With standard getter and setter methods that are omitted
+here for brevity.
+
+```java
+public class BatchDTO {
+    private Customer customer;
+    private List<Employee> employees;
+}
+```
+
+#### Batch Service Interface
+
+- Annotated with @BatchService. 
+- Must extend the generic Batch<T> interface. 
+- Use @Query, @Command, @Create, @Save, etc. to add query, command or 
+repository operations to the batch.
+- Use @ReturnMapping to map the service output to a member field of batch DTO
+
+```java
+@BatchService("")
+public interface BatchQuery extends Batch<BatchDTO> {
+	@Query("query/getCustomerByCustomerNumber")
+	@ReturnMapping("customer")
+	Customer getCustomer(int customerNumber);
+
+	@Query("query/listEmployees")
+	@ReturnMapping("employees")
+	List<Employee> getEmployees();
+}
+```
+
+#### Batch Service Call
+
+- Use DataAccessClient to get a BatchService proxy
+- Call service methods to add inputs
+- Call get(), run() or save() method to initiate the batch service. These methods are defined 
+in the Batch interface, and are the same except in semantics.
+
+```java
+public class BatchExampleService {
+    @Autowired
+    DataAccessClient client;
+
+    public BatchDTO batchedCustomerAndEmployees(int customerNumber) {
+        BatchQuery batchQuery = client.getBatch(BatchQuery.class);
+        batchQuery.getCustomer(customerNumber);
+        batchQuery.getEmployees();
+        BatchDTO dto = batchQuery.get();
+        return dto;
+    }
+}
+```
+
 ## Example Application
 
 Lastly, an example JDAC Spring Boot application is available here:  

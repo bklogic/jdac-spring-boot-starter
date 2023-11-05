@@ -103,12 +103,15 @@ public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, E
 		definitions = scanner.findCandidateComponents(basePackage);
 		registerBeanDefinitions(definitions, "repository", registry);
 		
-		// batches
+		// batches, load in access client, but not in bean registry
 		scanner.resetFilters(false);
 		scanner.addIncludeFilter(new AnnotationTypeFilter(BatchService.class));
 		definitions = scanner.findCandidateComponents(basePackage);
-		registerBeanDefinitions(definitions, "batch", registry);
-		
+		for (BeanDefinition definition : definitions) {
+			Class<?> beanClass = getBeanClass(definition.getBeanClassName());
+			client.getBatch(beanClass);
+		}
+
 		LOGGER.info("JDAC data access beans registered.");
 	}
 	
@@ -131,8 +134,8 @@ public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, E
 			registry.registerBeanDefinition(beanClass.getName(), targetBeanDefinition);
 		}
 	}
-	
-	
+
+
 	private void registerClientBean(DataAccessClient client, BeanDefinitionRegistry registry) {
 		Supplier<?> instanceSupplier = ()-> { return client; };
 		GenericBeanDefinition targetBeanDefinition = new GenericBeanDefinition();

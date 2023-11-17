@@ -4,10 +4,11 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.backlogic.persistence</groupId>
 	<artifactId>jdac-spring-boot-starter</artifactId>
-	<version>0.1.1</version>
+	<version>0.1.6</version>
 	<packaging>jar</packaging>
 	<name>jdac-spring-boot-starter</name>
 	<description>Spring boot starter for data access service</description>
+	<url>https://github.com/bklogic/jdac-spring-boot-starter</url>
 	<licenses>
 		<license>
 			<name>Apache License, Version 2.0</name>
@@ -57,6 +58,16 @@
 		</dependency>
 	</dependencies>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.yaml</groupId>
+				<artifactId>snakeyaml</artifactId>
+				<version>2.2</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -72,12 +83,25 @@
                     </excludes>
                 </configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>2.5.3</version>
+				<configuration>
+					<tagNameFormat>v@{project.version}</tagNameFormat>
+					<autoVersionSubmodules>true</autoVersionSubmodules>
+					<releaseProfiles>release</releaseProfiles>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
 	<profiles>
 		<profile>
 			<id>release</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
 			<build>
 				<plugins>
 					<plugin>
@@ -128,19 +152,6 @@
 								</configuration>
 							</execution>
 						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-release-plugin</artifactId>
-						<version>2.5.3</version>
-						<configuration>
-							<autoVersionSubmodules>true</autoVersionSubmodules>
-							<tagNameFormat>@{project.version}</tagNameFormat>
-							<pushChanges>false</pushChanges>
-							<localCheckout>true</localCheckout>
-							<remoteTagging>false</remoteTagging>
-							<arguments>-DskipTests=true</arguments>
-						</configuration>
 					</plugin>
 					<plugin>
 						<groupId>org.sonatype.plugins</groupId>

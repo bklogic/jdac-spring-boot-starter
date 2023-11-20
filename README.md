@@ -23,7 +23,7 @@ To get started with this JDAC Spring Boot Starter, please read on.
 <dependency>
     <groupId>net.backlogic.persistence</groupId>
     <artifactId>jdac-spring-boot-starter</artifactId>
-    <version>0.1.6</version>
+    <version>0.1.7</version>
 </dependency>
 ```
 

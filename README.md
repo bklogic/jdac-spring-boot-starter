@@ -9,7 +9,7 @@ which serve as proxies of backend data access services.
 
 If you don't know what data access service is, please take a look at:
 
-[Data Access Service Documentation](https://docs.backlogic.net/#/DataAccessService)
+[Data Access Service Documentation](https://www.backlogic.net/docs/concepts)
 
 It is a simple way to solve complex relational database access problem.
 
@@ -26,6 +26,13 @@ To get started with this JDAC Spring Boot Starter, please read on.
     <version>0.1.7</version>
 </dependency>
 ```
+> Note: If you have `spring-devtools` in your pom, it needs to be disabled. Otherwise, it will cause the 
+> BeanNotFound problem for user-defined data access service interface, 
+> as the proxy for the interface produced by the starter is loaded with base classloader, while the interface itself is 
+> loaded with the restart classloader. One possible solution for this problem is to include the JDAC jars with the
+> restart classloader, as described in the 
+> [Spring Boot Documentation](https://docs.spring.io/spring-boot/docs/3.1.5/reference/html/using.html#using.devtools.restart.customizing-the-classload),
+> but I have not been able to make it work for Spring Boot 3.1.5.
 
 ### Configuration in `application.yml`
 

@@ -111,7 +111,6 @@ public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, E
 			Class<?> beanClass = getBeanClass(definition.getBeanClassName());
 			client.getBatch(beanClass);
 		}
-
 		LOGGER.info("JDAC data access beans registered.");
 	}
 	
@@ -132,6 +131,7 @@ public class DataAccessBeanRegistrar implements ImportBeanDefinitionRegistrar, E
 			targetBeanDefinition.setBeanClass(beanClass);
 			targetBeanDefinition.setInstanceSupplier(instanceSupplier);
 			registry.registerBeanDefinition(beanClass.getName(), targetBeanDefinition);
+			LOGGER.info("JDAC bean registered: {}", beanClass.getName());
 		}
 	}
 
